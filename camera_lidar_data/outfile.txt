@@ -1,0 +1,30 @@
+Image height -: 
+376
+
+Image Width -: 
+1241
+
+The Intrinsic matrix for the raw (distorted) images -:  
+[[750.03420145   0.         960.        ]
+ [  0.         750.03420145 600.        ]
+ [  0.           0.           1.        ]]
+#     [fx  0 cx]
+# K = [ 0 fy cy]
+#     [ 0  0  1]
+
+
+The Distortion parameters -:
+0.0 0.0 0.0 0.0 0.0
+
+#(k1, k2, t1, t2, k3)
+Transformation from base link to camera-:
+[[1.    0.    0.    2.29 ]
+ [0.    1.    0.    0.033]
+ [0.    0.    1.    1.97 ]
+ [0.    0.    0.    1.   ]]
+Transformation from base link to Lidar-:
+[[1.  0.  0.  2.2]
+ [0.  1.  0.  0. ]
+ [0.  0.  1.  2.2]
+ [0.  0.  0.  1. ]]
+
