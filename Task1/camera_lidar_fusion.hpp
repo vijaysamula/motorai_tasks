@@ -11,7 +11,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include "opencv2/calib3d/calib3d.hpp"
-
+#include <pcl/common/common.h>
 #include <yaml-cpp/yaml.h>
 
 class CameraLidarFusion {
@@ -26,7 +26,7 @@ class CameraLidarFusion {
         void readingPointCloud(const std::string& file);
         void readingImage(const std::string& file);
         void readingCalibratedData(const std::string& file, cv::Mat& intrinsic, cv::Mat& base_to_cam, cv::Mat& base_to_lidar);
-        
+        void showLidarTopview();
     
     private:
         cv::Mat inputImage_;
