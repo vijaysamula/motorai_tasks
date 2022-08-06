@@ -7,18 +7,22 @@
 
 #include "opencv2/core/core.hpp"
 #include <opencv2/imgcodecs.hpp> 
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+
+#include "opencv2/calib3d/calib3d.hpp"
 
 #include <yaml-cpp/yaml.h>
 
 class CameraLidarFusion {
     public:
-        using PointT = pcl::PointXYZI;
+        using PointT = pcl::PointXYZ;
         using PointCloudT = pcl::PointCloud<PointT>;
         using PCPtr = PointCloudT::Ptr;
         using PCConstPtr = PointCloudT::ConstPtr;
 
-        CameraLidarFusion();
-        cv::Mat process(const PCPtr& cloud, cv::Mat& image, const std::string& calibrated_file);
+        CameraLidarFusion(const std::string& image_path, const std::string& cloud_path, const std::string& calibrated_file);
+        void process( const std::string& calibrated_file);
         void readingPointCloud(const std::string& file);
         void readingImage(const std::string& file);
         void readingCalibratedData(const std::string& file, cv::Mat& intrinsic, cv::Mat& base_to_cam, cv::Mat& base_to_lidar);
