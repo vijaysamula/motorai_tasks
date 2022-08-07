@@ -8,6 +8,8 @@ CameraLidarFusion::CameraLidarFusion(const std::string& image_path,const std::st
     process( calibrated_file);
 }
 
+CameraLidarFusion::~CameraLidarFusion(){}
+
 void CameraLidarFusion::readingImage(const std::string& file){
     try {
         inputImage_ = cv::imread(file, cv::IMREAD_COLOR);
@@ -82,45 +84,56 @@ void CameraLidarFusion::readingCalibratedData(const std::string& file, cv::Mat& 
 
 void CameraLidarFusion::process(const std::string& calibrated_file){
     cv::Mat cloud_image = inputImage_.clone();
+    // Initialing the matrices 
     cv::Mat  intrinsic(3,4 , cv::DataType<double>::type);
     cv::Mat  base_to_cam (4,4 , cv::DataType<double>::type);
     cv::Mat  base_to_lidar (4,4 , cv::DataType<double>::type);
     readingCalibratedData(calibrated_file, intrinsic, base_to_cam, base_to_lidar);
+
     cv::Mat homogeneous_xyz(4, 1, cv::DataType<double>::type);
     cv::Mat cartesian_uv(3, 1, cv::DataType<double>::type);
-    cv::Mat lidar_to_camera = base_to_lidar.inv() * base_to_cam;
-    cv::Mat lidar_to_camera_3X4 = cv::Mat(3, 4, cv::DataType<double>::type, lidar_to_camera.data);
-    std::cout<<lidar_to_camera_3X4<<" "<< lidar_to_camera<<std::endl;
+
+    // Determining the cam to lidar transformation matrix
+    cv::Mat lidar_to_camera = base_to_cam.inv() * base_to_lidar;
+    std::cout<<"The lidar to camera transformation matrx: "<< lidar_to_camera<<std::endl;
     for (auto pt : *inputCloud_){
         
-        if (pt.x < 0.0 ) continue;
-        homogeneous_xyz.at<double>(0,0) = pt.x;
-        homogeneous_xyz.at<double>(1,0) = pt.y;
-        homogeneous_xyz.at<double>(2,0) = pt.z;
+        if (pt.z < -2.35 ) continue;   // Removed the road points
+        /* As the given data is from UE4 Carla simulator. We must change from Carla's coordinate system to a standard camera coordinate system.
+
+          z                       z
+            |    x                 /
+            |   /                 / 
+            |  /           to    /___________x
+            | /                 |
+            |/__________y       |y
+        
+        (x,y,z)  to (y, -z, x)
+        */
+        homogeneous_xyz.at<double>(0,0) = pt.y;
+        homogeneous_xyz.at<double>(1,0) = -pt.z;
+        homogeneous_xyz.at<double>(2,0) = pt.x;
         homogeneous_xyz.at<double>(3,0) = 1;
-        std::cout<<homogeneous_xyz<<std::endl;
+
+        // Projection from homogeneous coordinates to catesian co-ordinates
         cartesian_uv = intrinsic * lidar_to_camera * homogeneous_xyz;
-        //std::cout<<cartesian_uv.at<double>(2,0)<<" ";
-        //if (cartesian_uv.at<double>(2,0)<0) continue;
+
         cv::Point pt_lidar;
-        pt_lidar.x = -cartesian_uv.at<double>(0,0)/cartesian_uv.at<double>(2,0);
-        pt_lidar.y = -cartesian_uv.at<double>(1,0)/cartesian_uv.at<double>(2,0);
+        pt_lidar.x = cartesian_uv.at<double>(0,0)/cartesian_uv.at<double>(2,0);
+        pt_lidar.y = cartesian_uv.at<double>(1,0)/cartesian_uv.at<double>(2,0);
+
+        // Coloring the pixels based on the x value 
         float val = pt.x;
-        float maxVal = 20.0;
+        float maxVal = 10.0;
         int red = std::min(255, (int) (255 * std::abs((val - maxVal) / maxVal)));
         int green = std::min(255, (int) (255 * (1 - std::abs((val - maxVal) / maxVal))));
-        cv::circle(cloud_image, pt_lidar, 5, cv::Scalar(0,green, red), -1);
-        std::cout<<pt_lidar<<std::endl;;
+        cv::circle(cloud_image, pt_lidar, 3, cv::Scalar(0,green, red), -1);
+        //std::cout<<pt_lidar<<std::endl;;
     }
-    float opacity = 0.4;
-    cv::addWeighted(cloud_image, opacity, inputImage_, 1 - opacity, 0, inputImage_);
-
-    std::string windowName = "LiDAR data on image overlay";
-    cv::namedWindow(windowName, 3);
-    cv::imshow(windowName, cloud_image);
-    cv::waitKey(0); // wait for key to be pressed
+    cv::imwrite("/home/vijay/Documents/CV/cv_2022/motorai/sensor_data_fusion/camera_lidar_data/camera_lidar.jpg", cloud_image);
     
 }
+
 
 int main(){
     std::string calibrated_file = "/home/vijay/Documents/CV/cv_2022/motorai/sensor_data_fusion/camera_lidar_data/outfile.txt";
