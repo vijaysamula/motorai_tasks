@@ -30,3 +30,16 @@ Yes, because Image has higher resolution than lidar, classifying the image is mo
 
 I am choosing Extended Kalman Filter (EKF). As we know Lidar gives pose_x and pose_y which needs kalman filter (as it is linear). But Radar gives additional vel_x, vel_y which is non-linear state equation, Therefore making using of non-linear filter like EKF helps to solve this problem effectively. There is some other filter Unscented kalman filter (UKF) can be used.
 
+
+
+
+# Comments
+
+I have couple of questions regarding tasks.
+
+1. Both the task instructions are not clear.
+2. In Task1, Co-ordinate system is not specified. Where I spent whole day thinking what is wrong with my procedure.
+3. In Task1, You mentioned datas are synchronised. But they are not. (I think you, should give image data after two frames.)
+4. Last this is huge. You gave me the data for Task2 which is truly unclear. When some data is given, There should be proper instructions.
+5. I didn't have time to finish the Task2. As instructions are not clear. 
+
